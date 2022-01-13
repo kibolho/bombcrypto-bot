@@ -16,6 +16,7 @@ stream = open("config.yaml", 'r')
 c = yaml.safe_load(stream)
 ct = c['threshold']
 ch = c['home']
+cp = c['positions']
 pause = c['time_intervals']['interval_between_moviments']
 pyautogui.PAUSE = pause
 
@@ -79,7 +80,7 @@ def addRandomness(n, randomn_factor_size=None):
     return int(randomized_n)
 
 def moveToWithRandomness(x,y,t):
-    pyautogui.moveTo(addRandomness(x,10),addRandomness(y,10),t+random()/2)
+    pyautogui.moveTo(addRandomness(x*cp["percentageX"],10),addRandomness(y*cp["percentageY"],10),t+random()/2)
 
 
 def remove_suffix(input_string, suffix):
@@ -174,13 +175,16 @@ def printSreen():
         sct_img = np.array(sct.grab(monitor))
         # The screen part to capture
         # monitor = {"top": 160, "left": 160, "width": 1000, "height": 135}
+        img = sct_img[:,:,:3]
+        # img =  cv2.resize(img, (img.shape[1]//2, img.shape[0]//2))
 
         # Grab the data
-        return sct_img[:,:,:3]
+        return img
 
 def positions(target, threshold=ct['default'],img = None):
     if img is None:
         img = printSreen()
+
     result = cv2.matchTemplate(img,target,cv2.TM_CCOEFF_NORMED)
     w = target.shape[1]
     h = target.shape[0]
@@ -194,6 +198,7 @@ def positions(target, threshold=ct['default'],img = None):
         rectangles.append([int(x), int(y), int(w), int(h)])
 
     rectangles, weights = cv2.groupRectangles(rectangles, 1, 0.2)
+
     return rectangles
 
 def scroll():
@@ -464,7 +469,6 @@ def main():
 
     global images
     images = load_images()
-
     if ch['enable']:
         global home_heroes
         home_heroes = loadHeroesToSendHome()
