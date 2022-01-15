@@ -253,7 +253,7 @@ def isWorking(bar, buttons):
 
 def clickGreenBarButtons():
     # ele clicka nos q tao trabaiano mas axo q n importa
-    offset = 140
+    offset = 280
 
     green_bars = positions(images['green-bar'], threshold=ct['green_bar'])
     logger('🟩 %d green bars detected' % len(green_bars))
@@ -268,7 +268,7 @@ def clickGreenBarButtons():
     if len(not_working_green_bars) > 0:
         logger('🆗 %d buttons with green bar detected' % len(not_working_green_bars))
         logger('👆 Clicking in %d heroes' % len(not_working_green_bars))
-
+    
     # se tiver botao com y maior que bar y-10 e menor que y+10
     hero_clicks_cnt = 0
     for (x, y, w, h) in not_working_green_bars:
@@ -437,8 +437,8 @@ def refreshHeroes():
         logger('⚒️ Sending all heroes to work', 'green')
 
     buttonsClicked = 1
+    max_workers = c['max_workers']
     empty_scrolls_attempts = c['scroll_attemps']
-
     while(empty_scrolls_attempts >0):
         if c['select_heroes_mode'] == 'full':
             buttonsClicked = clickFullBarButtons()
@@ -449,8 +449,12 @@ def refreshHeroes():
 
         sendHeroesHome()
 
-        if buttonsClicked == 0:
+        if buttonsClicked >= 0:
+            max_workers = max_workers - buttonsClicked
             empty_scrolls_attempts = empty_scrolls_attempts - 1
+
+        if max_workers <= 0:
+            empty_scrolls_attempts = 0
         scroll()
         time.sleep(2)
     logger('💪 {} heroes sent to work'.format(hero_clicks))
